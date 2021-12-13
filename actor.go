@@ -1,17 +1,19 @@
 package goblin
 
-import "math"
+import (
+	"math"
+)
 
 type Actor struct {
 	Position Vector
-	Shape    Shape
+	Box      *Box
 	Space    *Space
 }
 
-func NewActor(x float64, y float64, shape Shape) *Actor {
+func NewActor(x float64, y float64, width float64, height float64) *Actor {
 	return &Actor{
 		Position: Vector{x, y},
-		Shape:    shape,
+		Box:      NewBox(x, y, width, height),
 	}
 }
 
@@ -77,13 +79,31 @@ func (a *Actor) MoveY(amount float64, onCollide func(c *Collision)) {
 
 func (a *Actor) collidesAt(newPosition Vector) *Collision {
 
-	// for _, solid := range a.Space.Solids {
+	updatedBox := *a.Box
+	updatedBox.Position = newPosition
 
-	// }
+	solids := []*Solid{}
+	for _, solid := range a.Space.Solids {
+		if solid.Box.CheckCollision(&updatedBox) {
+			solids = append(solids, solid)
+		}
+	}
 
-	// for _, actor := range a.Space.Actors {
+	actors := []*Actor{}
+	for _, actor := range a.Space.Actors {
+		if actor.Box.CheckCollision(&updatedBox) {
+			actors = append(actors, actor)
+		}
+	}
 
-	// }
+	if len(solids) > 0 || len(actors) > 0 {
+		return &Collision{
+			CheckActor: a,
+			Position:   newPosition,
+			Actors:     actors,
+			Solids:     solids,
+		}
+	}
 
 	return nil
 }

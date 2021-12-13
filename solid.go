@@ -3,7 +3,7 @@ package goblin
 type Solid struct {
 	Space    *Space
 	Position Vector
-	Shape    Shape
+	Box      *Box
 }
 
 func NewSolid() *Solid {
